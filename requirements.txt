@@ -1,0 +1,4 @@
+trufflehog
+requests
+colorama
+jinja2

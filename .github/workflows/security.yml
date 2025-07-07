@@ -1,0 +1,52 @@
+name: 🛡️ CyberSentry Security Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔍 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🛡️ Run CyberSentry
+      run: python cybersentry.py
+      
+    - name: 📊 Upload Security Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: cybersentry-report
+        path: SECURITY_REPORT.md
+        
+    - name: 📝 Comment PR (if PR)
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('SECURITY_REPORT.md')) {
+            const report = fs.readFileSync('SECURITY_REPORT.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 🛡️ CyberSentry Security Report\n\n' + report
+            });
+          }
