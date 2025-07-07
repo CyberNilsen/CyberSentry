@@ -12,7 +12,6 @@ import json
 from datetime import datetime
 from colorama import Fore, Style, init
 
-# Initialize colorama
 init()
 
 class CyberSentry:
@@ -23,15 +22,14 @@ class CyberSentry:
             'scan_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
-        # Ignore patterns for false positives
         self.ignore_patterns = [
-            r'example\.com',           # Example domains
-            r'test[_-]?password',      # Test passwords
-            r'dummy[_-]?key',          # Dummy keys
-            r'placeholder',            # Placeholder values
-            r'your[_-]?api[_-]?key',   # Template placeholders
-            r'xxx+',                   # Multiple x's (redacted)
-            r'sk-[a-zA-Z0-9]{48}',     # OpenAI API key format (if you want to ignore)
+            r'example\.com',          
+            r'test[_-]?password',      
+            r'dummy[_-]?key',          
+            r'placeholder',           
+            r'your[_-]?api[_-]?key',  
+            r'xxx+',                  
+            r'sk-[a-zA-Z0-9]{48}',     
         ]
     
     def is_false_positive(self, text):
@@ -60,7 +58,6 @@ class CyberSentry:
         """Scan for hardcoded secrets using TruffleHog"""
         print(f"{Fore.BLUE}[+] Scanning for secrets...{Style.RESET_ALL}")
         
-        # Debug: Check for git-related files
         git_files = ['.git/config', '.git/HEAD', '.gitconfig']
         for git_file in git_files:
             if os.path.exists(git_file):
@@ -68,7 +65,6 @@ class CyberSentry:
             else:
                 print(f"{Fore.CYAN}[DEBUG] No git file: {git_file}{Style.RESET_ALL}")
         
-        # Check if .git directory exists
         if os.path.exists('.git'):
             print(f"{Fore.MAGENTA}[DEBUG] .git directory exists!{Style.RESET_ALL}")
             try:
@@ -80,7 +76,7 @@ class CyberSentry:
             print(f"{Fore.CYAN}[DEBUG] No .git directory found{Style.RESET_ALL}")
         
         try:
-            # Use the correct TruffleHog command
+
             result = subprocess.run(
                 ["trufflehog", "filesystem", ".", "--json", "--no-update"],
                 capture_output=True,
@@ -89,7 +85,7 @@ class CyberSentry:
             )
             
             if result.returncode == 0:
-                # Parse JSON output line by line
+
                 if result.stdout.strip():
                     lines = result.stdout.strip().split('\n')
                     secrets_found = []
@@ -98,25 +94,22 @@ class CyberSentry:
                         if line.strip():
                             try:
                                 secret_data = json.loads(line)
-                                # Extract detailed information
+
                                 detector_name = secret_data.get('DetectorName', 'Unknown')
                                 source_name = secret_data.get('SourceMetadata', {}).get('Data', {}).get('Filesystem', {}).get('file', 'Unknown file')
                                 raw_secret = secret_data.get('Raw', 'Hidden')
                                 verified = secret_data.get('Verified', False)
                                 
-                                # Truncate long secrets for display
                                 if len(raw_secret) > 50:
                                     display_secret = raw_secret[:30] + "..." + raw_secret[-10:]
                                 else:
                                     display_secret = raw_secret
                                 
-                                # Check if it's a false positive
                                 if not self.is_false_positive(raw_secret):
                                     verification_status = "✅ Verified" if verified else "❓ Unverified"
                                     secret_info = f"🔑 {detector_name} secret in {source_name}: {display_secret} [{verification_status}]"
                                     secrets_found.append(secret_info)
                                     
-                                    # Debug: Print file existence check
                                     print(f"{Fore.MAGENTA}[DEBUG] Found secret in: {source_name}{Style.RESET_ALL}")
                                     print(f"{Fore.MAGENTA}[DEBUG] File exists: {os.path.exists(source_name)}{Style.RESET_ALL}")
                                     if os.path.exists(source_name):
@@ -131,7 +124,7 @@ class CyberSentry:
                     self.results['secrets'] = secrets_found
                     if secrets_found:
                         print(f"{Fore.YELLOW}[!] Found {len(secrets_found)} potential secrets{Style.RESET_ALL}")
-                        # Show first few secrets in console
+
                         for i, secret in enumerate(secrets_found[:3], 1):
                             print(f"  {i}. {secret}")
                         if len(secrets_found) > 3:
@@ -142,7 +135,7 @@ class CyberSentry:
                     self.results['secrets'] = []
                     print(f"{Fore.GREEN}[✓] No secrets detected{Style.RESET_ALL}")
             else:
-                # If TruffleHog fails, fall back to basic pattern matching
+
                 print(f"{Fore.YELLOW}[!] TruffleHog failed, using basic pattern matching...{Style.RESET_ALL}")
                 self.basic_secret_scan()
                 
@@ -166,7 +159,7 @@ class CyberSentry:
         found_secrets = []
         
         for root, dirs, files in os.walk('.'):
-            # Skip hidden directories and common ignore patterns
+
             dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__']]
             
             for file in files:
@@ -189,9 +182,9 @@ class CyberSentry:
                         continue
         
         if found_secrets:
-            self.results['secrets'] = found_secrets[:10]  # Limit to 10 results
+            self.results['secrets'] = found_secrets[:10]  
             print(f"{Fore.YELLOW}[!] Found {len(found_secrets)} potential patterns{Style.RESET_ALL}")
-            # Show first few secrets in console
+
             for i, secret in enumerate(found_secrets[:3], 1):
                 print(f"  {i}. {secret}")
             if len(found_secrets) > 3:
@@ -242,7 +235,6 @@ class CyberSentry:
         
         print(f"{Fore.GREEN}[✓] Report saved to SECURITY_REPORT.md{Style.RESET_ALL}")
         
-        # Also print the results to console for debugging
         print(f"\n{Fore.CYAN}[DEBUG] Detailed Results:{Style.RESET_ALL}")
         for i, secret in enumerate(self.results['secrets'], 1):
             print(f"  {i}. {secret}")
@@ -253,7 +245,6 @@ class CyberSentry:
         self.scan_secrets()
         self.generate_report()
         
-        # Show results but don't fail CI for now
         if self.results['secrets']:
             print(f"{Fore.YELLOW}[!] Security issues detected! Check SECURITY_REPORT.md{Style.RESET_ALL}")
             print(f"{Fore.CYAN}[i] This is expected for the first run - review the report{Style.RESET_ALL}")
