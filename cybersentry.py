@@ -7,7 +7,8 @@ Created by CyberNilsen (Andreas Nilsen)
 import subprocess
 import sys
 import os
-import re  # Added missing import
+import re
+import json
 from datetime import datetime
 from colorama import Fore, Style, init
 
@@ -69,12 +70,49 @@ class CyberSentry:
             )
             
             if result.returncode == 0:
-                # Parse JSON output
+                # Parse JSON output line by line
                 if result.stdout.strip():
                     lines = result.stdout.strip().split('\n')
-                    secret_count = len([line for line in lines if line.strip()])
-                    self.results['secrets'] = [f"🔑 {secret_count} potential secrets detected"]
-                    print(f"{Fore.YELLOW}[!] Found {secret_count} potential secrets{Style.RESET_ALL}")
+                    secrets_found = []
+                    
+                    for line in lines:
+                        if line.strip():
+                            try:
+                                secret_data = json.loads(line)
+                                # Extract detailed information
+                                detector_name = secret_data.get('DetectorName', 'Unknown')
+                                source_name = secret_data.get('SourceMetadata', {}).get('Data', {}).get('Filesystem', {}).get('file', 'Unknown file')
+                                raw_secret = secret_data.get('Raw', 'Hidden')
+                                verified = secret_data.get('Verified', False)
+                                
+                                # Truncate long secrets for display
+                                if len(raw_secret) > 50:
+                                    display_secret = raw_secret[:30] + "..." + raw_secret[-10:]
+                                else:
+                                    display_secret = raw_secret
+                                
+                                # Check if it's a false positive
+                                if not self.is_false_positive(raw_secret):
+                                    verification_status = "✅ Verified" if verified else "❓ Unverified"
+                                    secret_info = f"🔑 {detector_name} secret in {source_name}: {display_secret} [{verification_status}]"
+                                    secrets_found.append(secret_info)
+                                else:
+                                    print(f"{Fore.CYAN}[i] Ignored false positive: {detector_name} - {display_secret[:20]}...{Style.RESET_ALL}")
+                                    
+                            except json.JSONDecodeError:
+                                print(f"{Fore.YELLOW}[!] Could not parse TruffleHog output line: {line[:50]}...{Style.RESET_ALL}")
+                                continue
+                    
+                    self.results['secrets'] = secrets_found
+                    if secrets_found:
+                        print(f"{Fore.YELLOW}[!] Found {len(secrets_found)} potential secrets{Style.RESET_ALL}")
+                        # Show first few secrets in console
+                        for i, secret in enumerate(secrets_found[:3], 1):
+                            print(f"  {i}. {secret}")
+                        if len(secrets_found) > 3:
+                            print(f"  ... and {len(secrets_found) - 3} more (see report)")
+                    else:
+                        print(f"{Fore.GREEN}[✓] No secrets detected{Style.RESET_ALL}")
                 else:
                     self.results['secrets'] = []
                     print(f"{Fore.GREEN}[✓] No secrets detected{Style.RESET_ALL}")
@@ -126,8 +164,13 @@ class CyberSentry:
                         continue
         
         if found_secrets:
-            self.results['secrets'] = found_secrets[:5]  # Limit to 5 results
+            self.results['secrets'] = found_secrets[:10]  # Limit to 10 results
             print(f"{Fore.YELLOW}[!] Found {len(found_secrets)} potential patterns{Style.RESET_ALL}")
+            # Show first few secrets in console
+            for i, secret in enumerate(found_secrets[:3], 1):
+                print(f"  {i}. {secret}")
+            if len(found_secrets) > 3:
+                print(f"  ... and {len(found_secrets) - 3} more (see report)")
         else:
             self.results['secrets'] = []
             print(f"{Fore.GREEN}[✓] No suspicious patterns found{Style.RESET_ALL}")
@@ -162,6 +205,8 @@ class CyberSentry:
             report += "- Review detected secrets above\n"
             report += "- Consider adding sensitive patterns to `.gitignore`\n"
             report += "- Use environment variables for real secrets\n"
+            report += "- Move secrets to secure configuration management\n"
+            report += "- Add secrets to your `.env` file (not committed to git)\n"
         else:
             report += "- No immediate action required\n"
         
