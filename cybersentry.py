@@ -41,29 +41,75 @@ class CyberSentry:
         print(f"{Fore.BLUE}[+] Scanning for secrets...{Style.RESET_ALL}")
         
         try:
+            # Use the correct TruffleHog command
             result = subprocess.run(
-                ["trufflehog", "filesystem", ".", "--json"],
+                ["trufflehog", "filesystem", ".", "--json", "--no-update"],
                 capture_output=True,
                 text=True,
                 timeout=300
             )
             
             if result.returncode == 0:
-                # Parse JSON output (simplified)
+                # Parse JSON output
                 if result.stdout.strip():
                     lines = result.stdout.strip().split('\n')
-                    self.results['secrets'] = [f"🔑 Secret detected: {len(lines)} potential secrets found"]
-                    print(f"{Fore.RED}[!] Found {len(lines)} potential secrets{Style.RESET_ALL}")
+                    secret_count = len([line for line in lines if line.strip()])
+                    self.results['secrets'] = [f"🔑 {secret_count} potential secrets detected"]
+                    print(f"{Fore.YELLOW}[!] Found {secret_count} potential secrets{Style.RESET_ALL}")
                 else:
                     self.results['secrets'] = []
                     print(f"{Fore.GREEN}[✓] No secrets detected{Style.RESET_ALL}")
             else:
-                self.results['secrets'] = [f"❌ Secret scan failed: {result.stderr}"]
+                # If TruffleHog fails, fall back to basic pattern matching
+                print(f"{Fore.YELLOW}[!] TruffleHog failed, using basic pattern matching...{Style.RESET_ALL}")
+                self.basic_secret_scan()
                 
         except subprocess.TimeoutExpired:
             self.results['secrets'] = ["⏱️ Secret scan timed out"]
+            print(f"{Fore.RED}[!] Secret scan timed out{Style.RESET_ALL}")
         except Exception as e:
-            self.results['secrets'] = [f"❌ Secret scan error: {str(e)}"]
+            print(f"{Fore.YELLOW}[!] TruffleHog error: {str(e)}, using basic scan...{Style.RESET_ALL}")
+            self.basic_secret_scan()
+    
+    def basic_secret_scan(self):
+        """Basic secret pattern matching as fallback"""
+        import re
+        import os
+        
+        secret_patterns = [
+            r'password\s*=\s*["\'][^"\']{8,}["\']',
+            r'api[_-]?key\s*=\s*["\'][^"\']{10,}["\']',
+            r'secret\s*=\s*["\'][^"\']{8,}["\']',
+            r'token\s*=\s*["\'][^"\']{16,}["\']',
+        ]
+        
+        found_secrets = []
+        
+        for root, dirs, files in os.walk('.'):
+            # Skip hidden directories and common ignore patterns
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__']]
+            
+            for file in files:
+                if file.endswith(('.py', '.js', '.json', '.yaml', '.yml', '.env', '.txt')):
+                    filepath = os.path.join(root, file)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                            content = f.read()
+                            
+                        for pattern in secret_patterns:
+                            matches = re.findall(pattern, content, re.IGNORECASE)
+                            if matches:
+                                found_secrets.append(f"🔍 Pattern match in {filepath}")
+                                
+                    except Exception:
+                        continue
+        
+        if found_secrets:
+            self.results['secrets'] = found_secrets[:5]  # Limit to 5 results
+            print(f"{Fore.YELLOW}[!] Found {len(found_secrets)} potential patterns{Style.RESET_ALL}")
+        else:
+            self.results['secrets'] = []
+            print(f"{Fore.GREEN}[✓] No suspicious patterns found{Style.RESET_ALL}")
     
     def generate_report(self):
         """Generate security report"""
