@@ -1,0 +1,456 @@
+
+# OpenAI API Key
+OPENAI_API_KEY = "sk-1234567890abcdef1234567890abcdef1234567890abcdef"
+
+# GitHub Personal Access Token
+GITHUB_TOKEN = "ghp_1234567890abcdef1234567890abcdef123456"
+
+# AWS Access Keys
+AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
+AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+# Stripe API Key
+STRIPE_SECRET_KEY = "sk_test_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+
+# Database URL with credentials
+DATABASE_URL = "postgresql://user:password123@localhost:5432/mydb"
+
+# JWT Secret
+JWT_SECRET = "super-secret-jwt-key-that-should-not-be-here-123456"
+
+# Slack Bot Token
+SLACK_BOT_TOKEN = "xoxb-1234567890-1234567890-abcdef1234567890abcdef"
+
+NODE_ENV=production
+DEBUG=false
+
+# Database Configuration
+DB_PASSWORD=mySecretPassword123!
+DB_HOST=localhost
+DB_USER=admin
+DB_NAME=production_db
+
+# Third-party Services
+SENDGRID_API_KEY=SG.1234567890abcdef.1234567890abcdef1234567890abcdef
+TWILIO_AUTH_TOKEN=1234567890abcdef1234567890abcdef
+FACEBOOK_APP_SECRET=1234567890abcdef1234567890abcdef
+
+# Encryption Keys
+ENCRYPTION_KEY=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+HASH_SALT=randomsalt123456789
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_config_json(self):
+        """Test JSON configuration file"""
+        filename = f"{self.test_dir}/config/config.json"
+        config = {
+            "app_name": "test_app",
+            "version": "1.0.0",
+            "database": {
+                "host": "localhost",
+                "port": 5432,
+                "username": "admin",
+                "password": "hardcoded_password_123"
+            },
+            "api_keys": {
+                "google_maps": "AIzaSyABC123DEF456GHI789JKL012MNO345PQR",
+                "mailgun": "key-1234567890abcdef1234567890abcdef",
+                "redis_url": "redis://username:password@localhost:6379/0"
+            },
+            "secrets": {
+                "session_secret": "super-secret-session-key-123456789",
+                "oauth_client_secret": "oauth_secret_1234567890abcdef"
+            }
+        }
+        with open(filename, 'w') as f:
+            json.dump(config, f, indent=2)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_yaml_config(self):
+        """Test YAML configuration file"""
+        filename = f"{self.test_dir}/config/config.yaml"
+        content = '''# Application Configuration - TEST FILE
+app:
+  name: test_application
+  debug: true
+  secret_key: "yaml-secret-key-123456789abcdef"
+
+database:
+  host: localhost
+  port: 5432
+  name: testdb
+  user: dbuser
+  password: "db_password_123456!"
+
+services:
+  redis:
+    url: "redis://user:redis_pass_123@localhost:6379"
+  
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: "test@gmail.com"
+    password: "email_password_123456"
+    
+  aws:
+    access_key: "AKIAI1234567890ABCDEF"
+    secret_key: "abcdef1234567890abcdef1234567890abcdef12"
+    region: "us-east-1"
+
+tokens:
+  jwt_secret: "jwt-signing-secret-key-123456789"
+  api_token: "api-token-1234567890abcdef1234567890abcdef"
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_javascript_file(self):
+        """Test JavaScript file with hardcoded secrets"""
+        filename = f"{self.test_dir}/src/config.js"
+        content = '''// JavaScript Configuration - TEST FILE
+// Contains hardcoded secrets for testing
+
+const config = {
+  apiKey: "1234567890abcdef1234567890abcdef",
+  secretKey: "js-secret-key-123456789abcdef",
+  databaseUrl: "mongodb://admin:password123@localhost:27017/testdb",
+  
+  // Third-party API keys
+  googleApiKey: "AIzaSyBCD123EFG456HIJ789KLM012NOP345QRS",
+  stripePublishableKey: "pk_test_1234567890abcdef1234567890abcdef",
+  stripeSecretKey: "sk_test_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+  
+  // OAuth secrets
+  githubClientSecret: "github_oauth_secret_1234567890abcdef1234567890abcdef",
+  facebookAppSecret: "facebook_app_secret_1234567890abcdef1234567890abcdef",
+  
+  // JWT configuration
+  jwtSecret: "jwt-secret-for-token-signing-123456789",
+  
+  // Email service
+  sendgridApiKey: "SG.1234567890abcdef.1234567890abcdef1234567890abcdef",
+  
+  // Private key (simulated)
+  privateKey: `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
+UJMXlZrYNhTr3hKVeZOqE+J0f6KhZqmECIHJGGJIAFnVSN4NvLOzn4VqFI8mL4+
+-----END PRIVATE KEY-----`
+};
+
+module.exports = config;
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_python_script(self):
+        """Test Python script with secrets"""
+        filename = f"{self.test_dir}/scripts/deploy.py"
+        content = '''#!/usr/bin/env python3
+"""
+Deployment Script - TEST FILE
+Contains various hardcoded secrets for testing
+"""
+
+import os
+import requests
+
+# Database credentials
+DB_HOST = "localhost"
+DB_USER = "admin"
+DB_PASSWORD = "deployment_password_123456"
+
+# API credentials
+API_KEY = "api_key_1234567890abcdef1234567890abcdef"
+SECRET_TOKEN = "secret_token_abcdef1234567890abcdef1234567890"
+
+# AWS credentials
+AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE"
+AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+# Third-party services
+SLACK_WEBHOOK = "https://hooks.slack.com/services/T1234567890/B1234567890/1234567890abcdef1234567890abcdef"
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1234567890/abcdef1234567890abcdef1234567890abcdef"
+
+def deploy_app():
+    """Deploy application with hardcoded credentials"""
+    
+    # Connect to database
+    connection_string = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/myapp"
+    
+    # Make API call
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "X-Secret-Token": SECRET_TOKEN
+    }
+    
+    # This would normally be in environment variables
+    config = {
+        "smtp_password": "email_password_123456!",
+        "redis_password": "redis_secret_123456",
+        "session_secret": "session_secret_key_123456789abcdef"
+    }
+    
+    print("Deployment completed")
+
+if __name__ == "__main__":
+    deploy_app()
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_docker_compose(self):
+        """Test Docker Compose file with secrets"""
+        filename = f"{self.test_dir}/docker-compose.yml"
+        content = '''# Docker Compose - TEST FILE
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=docker-jwt-secret-123456789
+      - DB_PASSWORD=docker_db_password_123
+      - API_KEY=docker_api_key_1234567890abcdef
+      - REDIS_PASSWORD=docker_redis_pass_123456
+    
+  database:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=myapp
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=postgres_password_123456!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+  redis:
+    image: redis:6
+    command: redis-server --requirepass redis_hardcoded_password_123
+    ports:
+      - "6379:6379"
+      
+  mongodb:
+    image: mongo:4.4
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=mongo_password_123456!
+    ports:
+      - "27017:27017"
+
+volumes:
+  postgres_data:
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_shell_script(self):
+        """Test shell script with secrets"""
+        filename = f"{self.test_dir}/scripts/setup.sh"
+        content = '''#!/bin/bash
+# Setup Script - TEST FILE
+# Contains hardcoded secrets for testing
+
+# Set environment variables
+export DB_PASSWORD="bash_db_password_123456"
+export API_KEY="bash_api_key_1234567890abcdef"
+export SECRET_TOKEN="bash_secret_token_abcdef1234567890"
+
+# AWS credentials
+export AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
+export AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+# Database setup
+DB_HOST="localhost"
+DB_USER="admin"
+DB_PASS="shell_script_password_123456!"
+
+# Connect to database
+mysql -h $DB_HOST -u $DB_USER -p$DB_PASS -e "CREATE DATABASE IF NOT EXISTS testdb;"
+
+# Download and setup with API key
+curl -H "Authorization: Bearer bash_bearer_token_123456789abcdef" \\
+     -H "X-API-Key: bash_x_api_key_1234567890abcdef" \\
+     https://api.example.com/setup
+
+# Private key setup (simulated)
+echo "-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA1234567890abcdef1234567890abcdef1234567890abcdef
+1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+-----END RSA PRIVATE KEY-----" > /tmp/private_key.pem
+
+echo "Setup completed"
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        os.chmod(filename, 0o755)  # Make executable
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_readme_with_secrets(self):
+        """Test README with accidentally committed secrets"""
+        filename = f"{self.test_dir}/README.md"
+        content = '''# Test Application
+
+This is a test application for CyberSentry scanner.
+
+## Configuration
+
+### Database Setup
+```bash
+createdb myapp
+psql myapp -c "CREATE USER admin WITH PASSWORD 'readme_password_123456';"
+```
+
+### API Keys
+- OpenAI API Key: `sk-readme123456789abcdef123456789abcdef123456789abcdef`
+- GitHub Token: `ghp_readme123456789abcdef123456789abcdef123456`
+
+### Environment Variables
+```bash
+export DATABASE_URL="postgresql://user:readme_db_pass_123@localhost:5432/myapp"
+export JWT_SECRET="readme-jwt-secret-123456789abcdef"
+export STRIPE_SECRET_KEY="sk_test_readme123456789abcdef123456789abcdef123456789abcdef123456789abcdef"
+```
+
+### Quick Start
+```javascript
+const config = {
+  apiKey: "readme_api_key_123456789abcdef",
+  secretKey: "readme_secret_key_123456789abcdef"
+};
+```
+
+## Deployment
+Use the following credentials for deployment:
+- Username: `admin`
+- Password: `readme_deploy_password_123456!`
+- Token: `readme_deploy_token_abcdef1234567890`
+
+**Note: This is a test file with fake secrets for scanner testing!**
+'''
+        with open(filename, 'w') as f:
+            f.write(content)
+        self.test_files.append(filename)
+        print(f"✅ Created: {filename}")
+    
+    def create_test_summary(self):
+        """Create a summary of all test files"""
+        filename = f"{self.test_dir}/TEST_SUMMARY.md"
+        content = f'''# CyberSentry Test Suite Summary
+
+**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+
+## 📁 Test Files Created
+
+This test suite contains **{len(self.test_files)} files** with various types of secrets:
+
+### Files with Secrets:
+'''
+        
+        secret_types = {
+            "api_keys.py": "OpenAI, GitHub, AWS, Stripe API keys",
+            ".env": "Database passwords, SendGrid, Twilio tokens",
+            "config.json": "Database passwords, Google Maps, Mailgun API keys",
+            "config.yaml": "YAML format secrets, AWS credentials, SMTP passwords",
+            "config.js": "JavaScript API keys, OAuth secrets, JWT tokens",
+            "deploy.py": "Python script with hardcoded credentials",
+            "docker-compose.yml": "Docker environment variables with secrets",
+            "setup.sh": "Shell script with AWS credentials and passwords",
+            "README.md": "Documentation with accidentally exposed secrets"
+        }
+        
+        for file_path in self.test_files:
+            file_name = os.path.basename(file_path)
+            description = secret_types.get(file_name, "Various secrets")
+            content += f"- **{file_name}**: {description}\n"
+        
+        content += f'''
+## 🔍 Expected Detections
+
+Your CyberSentry scanner should detect approximately **40-60 secrets** across these files, including:
+
+- **API Keys**: OpenAI, GitHub, AWS, Stripe, Google Maps, SendGrid
+- **Database Passwords**: PostgreSQL, MySQL, MongoDB, Redis
+- **OAuth Secrets**: GitHub, Facebook client secrets
+- **JWT Tokens**: Various JWT signing secrets
+- **Private Keys**: RSA and other private key formats
+- **Environment Variables**: Various env var secrets
+- **Webhooks**: Slack and Discord webhook URLs
+
+## 🧪 How to Test
+
+1. **Run your scanner:**
+   ```bash
+   python cybersentry.py
+   ```
+
+2. **Check the results:**
+   - Console output should show multiple secrets found
+   - SECURITY_REPORT.md should list all detected secrets
+   - Verify the scanner found secrets in multiple file types
+
+3. **Verify detection accuracy:**
+   - Check that legitimate secrets are detected
+   - Ensure file paths are correct
+   - Confirm secret types are properly identified
+
+## 🧹 Cleanup
+
+To remove all test files:
+```bash
+rm -rf {self.test_dir}/
+```
+
+**⚠️ Important: These are test files with fake secrets! Do not use these credentials in real applications.**
+'''
+        
+        with open(filename, 'w') as f:
+            f.write(content)
+        print(f"✅ Created test summary: {filename}")
+    
+    def run(self):
+        """Generate complete test suite"""
+        print("🧪 Creating CyberSentry Test Suite...")
+        print("=" * 50)
+        
+        self.create_test_directory()
+        self.create_api_keys_file()
+        self.create_env_file()
+        self.create_config_json()
+        self.create_yaml_config()
+        self.create_javascript_file()
+        self.create_python_script()
+        self.create_docker_compose()
+        self.create_shell_script()
+        self.create_readme_with_secrets()
+        self.create_test_summary()
+        
+        print("=" * 50)
+        print(f"✅ Test suite created successfully!")
+        print(f"📁 Location: {self.test_dir}/")
+        print(f"📊 Files created: {len(self.test_files)}")
+        print()
+        print("🚀 Now run your scanner:")
+        print("   python cybersentry.py")
+        print()
+        print("🧹 To cleanup test files:")
+        print(f"   rm -rf {self.test_dir}/")
+
+if __name__ == "__main__":
+    test_suite = CyberSentryTestSuite()
+    test_suite.run()
