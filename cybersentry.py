@@ -7,6 +7,7 @@ Created by CyberNilsen (Andreas Nilsen)
 import subprocess
 import sys
 import os
+import re  # Added missing import
 from datetime import datetime
 from colorama import Fore, Style, init
 
@@ -20,6 +21,24 @@ class CyberSentry:
             'vulnerabilities': [],
             'scan_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
+        
+        # Ignore patterns for false positives
+        self.ignore_patterns = [
+            r'example\.com',           # Example domains
+            r'test[_-]?password',      # Test passwords
+            r'dummy[_-]?key',          # Dummy keys
+            r'placeholder',            # Placeholder values
+            r'your[_-]?api[_-]?key',   # Template placeholders
+            r'xxx+',                   # Multiple x's (redacted)
+            r'sk-[a-zA-Z0-9]{48}',     # OpenAI API key format (if you want to ignore)
+        ]
+    
+    def is_false_positive(self, text):
+        """Check if detected secret is likely a false positive"""
+        for pattern in self.ignore_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return True
+        return False
     
     def print_banner(self):
         banner = f"""
@@ -73,14 +92,12 @@ class CyberSentry:
     
     def basic_secret_scan(self):
         """Basic secret pattern matching as fallback"""
-        import re
-        import os
-        
         secret_patterns = [
-            r'password\s*=\s*["\'][^"\']{8,}["\']',
-            r'api[_-]?key\s*=\s*["\'][^"\']{10,}["\']',
-            r'secret\s*=\s*["\'][^"\']{8,}["\']',
-            r'token\s*=\s*["\'][^"\']{16,}["\']',
+            (r'password\s*=\s*["\'][^"\']{8,}["\']', 'Hardcoded Password'),
+            (r'api[_-]?key\s*=\s*["\'][^"\']{10,}["\']', 'API Key'),
+            (r'secret\s*=\s*["\'][^"\']{8,}["\']', 'Secret Token'),
+            (r'token\s*=\s*["\'][^"\']{16,}["\']', 'Access Token'),
+            (r'["\'][A-Za-z0-9]{32,}["\']', 'Long String (Potential Key)'),
         ]
         
         found_secrets = []
@@ -90,16 +107,20 @@ class CyberSentry:
             dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__']]
             
             for file in files:
-                if file.endswith(('.py', '.js', '.json', '.yaml', '.yml', '.env', '.txt')):
+                if file.endswith(('.py', '.js', '.json', '.yaml', '.yml', '.env', '.txt', '.md')):
                     filepath = os.path.join(root, file)
                     try:
                         with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
                             content = f.read()
                             
-                        for pattern in secret_patterns:
+                        for pattern, description in secret_patterns:
                             matches = re.findall(pattern, content, re.IGNORECASE)
-                            if matches:
-                                found_secrets.append(f"🔍 Pattern match in {filepath}")
+                            for match in matches:
+                                if not self.is_false_positive(match):
+                                    match_preview = match[:30] + "..." if len(match) > 30 else match
+                                    found_secrets.append(f"🔍 {description} in {filepath}: {match_preview}")
+                                else:
+                                    print(f"{Fore.CYAN}[i] Ignored false positive: {match[:20]}...{Style.RESET_ALL}")
                                 
                     except Exception:
                         continue
@@ -136,12 +157,25 @@ class CyberSentry:
         report += f"- **Secrets Found:** {len(self.results['secrets'])}\n"
         report += f"- **Scan Status:** {'❌ Issues Found' if self.results['secrets'] else '✅ Clean'}\n"
         
+        report += "\n### 🛠️ Recommendations\n"
+        if self.results['secrets']:
+            report += "- Review detected secrets above\n"
+            report += "- Consider adding sensitive patterns to `.gitignore`\n"
+            report += "- Use environment variables for real secrets\n"
+        else:
+            report += "- No immediate action required\n"
+        
         report += "\n---\n*Powered by CyberSentry - Automated Security Scanner*\n"
         
         with open("SECURITY_REPORT.md", "w") as f:
             f.write(report)
         
         print(f"{Fore.GREEN}[✓] Report saved to SECURITY_REPORT.md{Style.RESET_ALL}")
+        
+        # Also print the results to console for debugging
+        print(f"\n{Fore.CYAN}[DEBUG] Detailed Results:{Style.RESET_ALL}")
+        for i, secret in enumerate(self.results['secrets'], 1):
+            print(f"  {i}. {secret}")
     
     def run(self):
         """Main scanner execution"""
