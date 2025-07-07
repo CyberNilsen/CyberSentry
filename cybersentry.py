@@ -60,6 +60,25 @@ class CyberSentry:
         """Scan for hardcoded secrets using TruffleHog"""
         print(f"{Fore.BLUE}[+] Scanning for secrets...{Style.RESET_ALL}")
         
+        # Debug: Check for git-related files
+        git_files = ['.git/config', '.git/HEAD', '.gitconfig']
+        for git_file in git_files:
+            if os.path.exists(git_file):
+                print(f"{Fore.MAGENTA}[DEBUG] Found git file: {git_file}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.CYAN}[DEBUG] No git file: {git_file}{Style.RESET_ALL}")
+        
+        # Check if .git directory exists
+        if os.path.exists('.git'):
+            print(f"{Fore.MAGENTA}[DEBUG] .git directory exists!{Style.RESET_ALL}")
+            try:
+                git_contents = os.listdir('.git')
+                print(f"{Fore.MAGENTA}[DEBUG] .git contents: {git_contents[:5]}...{Style.RESET_ALL}")
+            except:
+                print(f"{Fore.YELLOW}[DEBUG] Could not read .git directory{Style.RESET_ALL}")
+        else:
+            print(f"{Fore.CYAN}[DEBUG] No .git directory found{Style.RESET_ALL}")
+        
         try:
             # Use the correct TruffleHog command
             result = subprocess.run(
@@ -96,6 +115,12 @@ class CyberSentry:
                                     verification_status = "✅ Verified" if verified else "❓ Unverified"
                                     secret_info = f"🔑 {detector_name} secret in {source_name}: {display_secret} [{verification_status}]"
                                     secrets_found.append(secret_info)
+                                    
+                                    # Debug: Print file existence check
+                                    print(f"{Fore.MAGENTA}[DEBUG] Found secret in: {source_name}{Style.RESET_ALL}")
+                                    print(f"{Fore.MAGENTA}[DEBUG] File exists: {os.path.exists(source_name)}{Style.RESET_ALL}")
+                                    if os.path.exists(source_name):
+                                        print(f"{Fore.MAGENTA}[DEBUG] File size: {os.path.getsize(source_name)} bytes{Style.RESET_ALL}")
                                 else:
                                     print(f"{Fore.CYAN}[i] Ignored false positive: {detector_name} - {display_secret[:20]}...{Style.RESET_ALL}")
                                     
